@@ -59,3 +59,30 @@ button:hover {
     border-radius: 4px;
     list-style: none;
 }
+
+/* 既存のスタイルはそのままにして、新しいスタイルを追加します */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    border: 1px solid #8b5a2b; /* Darker coffee brown */
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #6f4e37; /* Coffee brown */
+    color: #fff;
+}
+
+tbody tr:nth-child(odd) {
+    background-color: #fff8e1; /* Off-white with a hint of coffee */
+}
+
+tbody tr:nth-child(even) {
+    background-color: #f3e5ab; /* Light coffee background */
+}
+

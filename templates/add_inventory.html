@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Inventory</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Add Inventory</h1>
+        <form method="POST">
+            <div class="form-group">
+                <label for="product_id">Product</label>
+                <select name="product_id" id="product_id">
+                    {% for product in products %}
+                    <option value="{{ product.id }}">{{ product.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="user_id">User</label>
+                <select name="user_id" id="user_id">
+                    {% for user in users %}
+                    <option value="{{ user.id }}">{{ user.display_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="quantity">Quantity</label>
+                <input type="number" name="quantity" id="quantity" required>
+            </div>
+            <div class="form-group">
+                <label for="note">Note</label>
+                <textarea name="note" id="note"></textarea>
+            </div>
+            <button type="submit">Add Inventory</button>
+        </form>
+    </div>
+</body>
+</html>
