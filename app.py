@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 import sqlite3
-from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'
@@ -50,7 +49,45 @@ def product_list():
     conn.close()
     return render_template('product_list.html', products=products)
 
-# 入出庫の登録
+@app.route('/edit_product/<int:product_id>', methods=['GET', 'POST'])
+def edit_product(product_id):
+    conn = get_db()
+    cur = conn.cursor()
+
+    if request.method == 'POST':
+        name = request.form['name']
+        category = request.form['category']
+        price = request.form['price']
+        quantity = request.form['quantity']
+
+        if not name or not category or not price or not quantity:
+            flash('All fields are required!')
+            return redirect(url_for('edit_product', product_id=product_id))
+
+        cur.execute('''
+            UPDATE Products SET name = ?, category = ?, price = ?, quantity = ?
+            WHERE id = ?
+        ''', (name, category, float(price), int(quantity), product_id))
+        conn.commit()
+        conn.close()
+        flash('Product updated successfully!')
+        return redirect(url_for('product_list'))
+
+    cur.execute('SELECT * FROM Products WHERE id = ?', (product_id,))
+    product = cur.fetchone()
+    conn.close()
+    return render_template('edit_product.html', product=product)
+
+@app.route('/delete_product/<int:product_id>', methods=['POST'])
+def delete_product(product_id):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute('DELETE FROM Products WHERE id = ?', (product_id,))
+    conn.commit()
+    conn.close()
+    flash('Product deleted successfully!')
+    return redirect(url_for('product_list'))
+
 @app.route('/add_inventory', methods=['GET', 'POST'])
 def add_inventory():
     if request.method == 'POST':
@@ -58,11 +95,6 @@ def add_inventory():
         user_id = request.form['user_id']
         quantity = request.form['quantity']
         note = request.form['note']
-
-        print(product_id)
-        print(user_id)
-        print(quantity)
-        print(note)
 
         if not product_id or not user_id or not quantity:
             flash('All fields are required!')
@@ -92,16 +124,11 @@ def add_inventory():
     cur = conn.cursor()
     cur.execute('SELECT * FROM Products')
     products = cur.fetchall()
-    print("-------")
-    print(products)
     cur.execute('SELECT * FROM Users')
     users = cur.fetchall()
-    print(users)
     conn.close()
     return render_template('add_inventory.html', products=products, users=users)
 
-
-# 入出庫履歴の表示
 @app.route('/inventory_list')
 def inventory_list():
     conn = get_db()
@@ -118,7 +145,52 @@ def inventory_list():
     conn.close()
     return render_template('inventory_list.html', inventory=inventory)
 
+@app.route('/edit_inventory/<int:inventory_id>', methods=['GET', 'POST'])
+def edit_inventory(inventory_id):
+    conn = get_db()
+    cur = conn.cursor()
 
+    if request.method == 'POST':
+        product_id = request.form['product_id']
+        user_id = request.form['user_id']
+        quantity = request.form['quantity']
+        note = request.form['note']
+
+        if not product_id or not user_id or not quantity:
+            flash('All fields are required!')
+            return redirect(url_for('edit_inventory', inventory_id=inventory_id))
+
+        cur.execute('''
+            UPDATE Inventory SET product_id = ?, user_id = ?, quantity = ?, note = ?
+            WHERE id = ?
+        ''', (product_id, user_id, int(quantity), note, inventory_id))
+        cur.execute('''
+            UPDATE Products SET quantity = quantity + ?
+            WHERE id = ?
+        ''', (int(quantity), product_id))
+        conn.commit()
+        conn.close()
+        flash('Inventory updated successfully!')
+        return redirect(url_for('inventory_list'))
+
+    cur.execute('SELECT * FROM Inventory WHERE id = ?', (inventory_id,))
+    inventory = cur.fetchone()
+    cur.execute('SELECT * FROM Products')
+    products = cur.fetchall()
+    cur.execute('SELECT * FROM Users')
+    users = cur.fetchall()
+    conn.close()
+    return render_template('edit_inventory.html', inventory=inventory, products=products, users=users)
+
+@app.route('/delete_inventory/<int:inventory_id>', methods=['POST'])
+def delete_inventory(inventory_id):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute('DELETE FROM Inventory WHERE id = ?', (inventory_id,))
+    conn.commit()
+    conn.close()
+    flash('Inventory deleted successfully!')
+    return redirect(url_for('inventory_list'))
 
 if __name__ == '__main__':
     app.run(debug=True)
