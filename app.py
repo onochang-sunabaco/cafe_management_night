@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 import sqlite3
+from werkzeug.security import generate_password_hash
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'
@@ -14,6 +15,37 @@ def get_db():
 @app.route('/')
 def index():
     return 'Welcome to Cafe Management System'
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        display_name = request.form['display_name']
+        role = request.form['role']
+
+        if not username or not password or not display_name or not role:
+            flash('All fields are required!')
+            return redirect(url_for('register'))
+
+        password_hash = generate_password_hash(password)
+
+        conn = get_db()
+        cur = conn.cursor()
+        try:
+            cur.execute('''
+                INSERT INTO Users (username, password_hash, display_name, role)
+                VALUES (?, ?, ?, ?)
+            ''', (username, password_hash, display_name, role))
+            conn.commit()
+            flash('User registered successfully!')
+            return redirect(url_for('index'))
+        except sqlite3.IntegrityError:
+            flash('Username already exists!')
+        finally:
+            conn.close()
+        
+    return render_template('register.html')
 
 @app.route('/add_product', methods=['GET', 'POST'])
 def add_product():
