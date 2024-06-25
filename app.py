@@ -14,7 +14,7 @@ def get_db():
 
 @app.route('/')
 def index():
-    return 'Welcome to Cafe Management System'
+    return render_template("index.html")
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
