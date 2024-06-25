@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>Inventory List</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1>Inventory List</h1>
-        <table>
+    <div class="container mt-5">
+        <h1 class="mb-4">Inventory List</h1>
+        <table class="table table-bordered">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -30,9 +31,9 @@
                     <td>{{ item.received_date }}</td>
                     <td>{{ item.note }}</td>
                     <td>
-                        <a href="{{ url_for('edit_inventory', inventory_id=item.id) }}">Edit</a>
+                        <a href="{{ url_for('edit_inventory', inventory_id=item.id) }}" class="btn btn-sm btn-warning">Edit</a>
                         <form action="{{ url_for('delete_inventory', inventory_id=item.id) }}" method="post" style="display:inline;">
-                            <button type="submit">Delete</button>
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                         </form>
                     </td>
                 </tr>

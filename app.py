@@ -1,6 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 import sqlite3
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'
@@ -46,6 +46,36 @@ def register():
             conn.close()
         
     return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute('SELECT * FROM Users WHERE username = ?', (username,))
+        user = cur.fetchone()
+        conn.close()
+
+        if user and check_password_hash(user['password_hash'], password):
+            session['user_id'] = user['id']
+            session['username'] = user['username']
+            session['display_name'] = user['display_name']
+            session['role'] = user['role']
+            flash('Logged in successfully!')
+            return redirect(url_for('inventory_list'))
+        else:
+            flash('Invalid username or password')
+        
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('Logged out successfully!')
+    return redirect(url_for('login'))
 
 @app.route('/add_product', methods=['GET', 'POST'])
 def add_product():
